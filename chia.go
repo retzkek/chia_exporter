@@ -1,5 +1,11 @@
 package main
 
+type NetworkInfo struct {
+	NetworkName   string `json:"network_name"`
+	NetworkPrefix string `json:"network_prefix"`
+	Success       bool
+}
+
 // Chia node types from server/outbound_message.py
 const (
 	NodeTypeNone = iota

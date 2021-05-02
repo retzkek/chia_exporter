@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -29,6 +30,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	info, err := getNetworkInfo(client, *url)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Printf("Connected to node at %s on %s", *url, info.NetworkName)
 
 	// TODO: add labels for node type (can't use NewGuageFunc, need a collector)
 	if err := prometheus.Register(prometheus.NewGaugeFunc(
@@ -72,6 +78,21 @@ func newClient(cert, key string) (*http.Client, error) {
 		},
 		Timeout: 5 * time.Second,
 	}, nil
+}
+
+func getNetworkInfo(client *http.Client, base string) (*NetworkInfo, error) {
+	b := strings.NewReader(`{"":""}`)
+	r, err := client.Post(base+"/get_network_info", "application/json", b)
+	if err != nil {
+		return nil, fmt.Errorf("error calling get_network_info: %w", err)
+	}
+	var info NetworkInfo
+	if err := json.NewDecoder(r.Body).Decode(&info); err != nil {
+		if err != nil {
+			return nil, fmt.Errorf("error decoding get_network_info respons: %w", err)
+		}
+	}
+	return &info, nil
 }
 
 func peerCounter(client *http.Client, base string) func() float64 {
