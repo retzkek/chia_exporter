@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -36,17 +37,11 @@ func main() {
 	}
 	log.Printf("Connected to node at %s on %s", *url, info.NetworkName)
 
-	// TODO: add labels for node type (can't use NewGuageFunc, need a collector)
-	if err := prometheus.Register(prometheus.NewGaugeFunc(
-		prometheus.GaugeOpts{
-			Subsystem: "chia",
-			Name:      "peers_count",
-			Help:      "Number of peers currently connected.",
-		},
-		peerCounter(client, *url),
-	)); err != nil {
-		log.Fatal(err)
+	cc := ChiaCollector{
+		client:  client,
+		baseURL: *url,
 	}
+	prometheus.MustRegister(cc)
 
 	http.Handle("/metrics", promhttp.Handler())
 
@@ -97,19 +92,44 @@ func queryAPI(client *http.Client, base, endpoint, query string, result interfac
 	return nil
 }
 
-func peerCounter(client *http.Client, base string) func() float64 {
-	return func() float64 {
-		var conns Connections
-		if err := queryAPI(client, base, "get_connections", "", &conns); err != nil {
-			log.Print(err)
-			return -1.0
-		}
-		peers := 0
-		for _, p := range conns.Connections {
-			if p.Type == NodeTypeFullNode {
-				peers++
-			}
-		}
-		return float64(peers)
+type ChiaCollector struct {
+	client  *http.Client
+	baseURL string
+}
+
+// Describe is implemented with DescribeByCollect. That's possible because the
+// Collect method will always return the same two metrics with the same two
+// descriptors.
+func (cc ChiaCollector) Describe(ch chan<- *prometheus.Desc) {
+	prometheus.DescribeByCollect(cc, ch)
+}
+
+// Collect queries Chia and returns metrics on ch.
+func (cc ChiaCollector) Collect(ch chan<- prometheus.Metric) {
+	cc.collectConnections(ch)
+}
+
+func (cc ChiaCollector) collectConnections(ch chan<- prometheus.Metric) {
+	var conns Connections
+	if err := queryAPI(cc.client, cc.baseURL, "get_connections", "", &conns); err != nil {
+		log.Print(err)
+		return
+	}
+	peers := make([]int, NumNodeTypes)
+	for _, p := range conns.Connections {
+		peers[p.Type-1]++
+	}
+	desc := prometheus.NewDesc(
+		"chia_peers_count",
+		"Number of peers currently connected.",
+		[]string{"type"}, nil,
+	)
+	for nt, cnt := range peers {
+		ch <- prometheus.MustNewConstMetric(
+			desc,
+			prometheus.GaugeValue,
+			float64(cnt),
+			strconv.Itoa(nt+1),
+		)
 	}
 }

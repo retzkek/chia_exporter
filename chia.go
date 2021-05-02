@@ -15,6 +15,7 @@ const (
 	NodeTypeTimelord
 	NodeTypeIntroducer
 	NodeTypeWallet
+	NumNodeTypes = 6
 )
 
 type NodeType int
