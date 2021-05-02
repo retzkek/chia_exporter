@@ -1,3 +1,17 @@
+// Copyright 2021 Kevin Retzke
+//
+// This program is free software: you can redistribute it and/or modify it under
+// the terms of the GNU Affero General Public License as published by the Free
+// Software Foundation, either version 3 of the License, or (at your option) any
+// later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+// FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+// details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
 package main
 
 import (
@@ -24,7 +38,12 @@ var (
 	url  = flag.String("url", "https://localhost:8555", "The base URL for the full node RPC endpoint.")
 )
 
+var (
+	Version = "0.1"
+)
+
 func main() {
+	log.Printf("chia_exporter version %s", Version)
 	flag.Parse()
 
 	client, err := newClient(os.ExpandEnv(*cert), os.ExpandEnv(*key))
@@ -43,6 +62,12 @@ func main() {
 	}
 	prometheus.MustRegister(cc)
 
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "chia_exporter version %s\n", Version)
+		fmt.Fprintf(w, "metrics are published on /metrics\n\n")
+		fmt.Fprintf(w, "This program is free software released under the GNU AGPL.\n")
+		fmt.Fprintf(w, "The source code is availabe at https://github.com/retzkek/chia_exporter\n")
+	})
 	http.Handle("/metrics", promhttp.Handler())
 
 	log.Printf("Listening on %s. Serving metrics on /metrics.", *addr)
@@ -97,9 +122,7 @@ type ChiaCollector struct {
 	baseURL string
 }
 
-// Describe is implemented with DescribeByCollect. That's possible because the
-// Collect method will always return the same two metrics with the same two
-// descriptors.
+// Describe is implemented with DescribeByCollect.
 func (cc ChiaCollector) Describe(ch chan<- *prometheus.Desc) {
 	prometheus.DescribeByCollect(cc, ch)
 }
