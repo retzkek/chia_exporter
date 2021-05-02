@@ -30,8 +30,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	info, err := getNetworkInfo(client, *url)
-	if err != nil {
+	var info NetworkInfo
+	if err := queryAPI(client, *url, "get_network_info", "", &info); err != nil {
 		log.Fatal(err)
 	}
 	log.Printf("Connected to node at %s on %s", *url, info.NetworkName)
@@ -80,35 +80,29 @@ func newClient(cert, key string) (*http.Client, error) {
 	}, nil
 }
 
-func getNetworkInfo(client *http.Client, base string) (*NetworkInfo, error) {
-	b := strings.NewReader(`{"":""}`)
-	r, err := client.Post(base+"/get_network_info", "application/json", b)
-	if err != nil {
-		return nil, fmt.Errorf("error calling get_network_info: %w", err)
+func queryAPI(client *http.Client, base, endpoint, query string, result interface{}) error {
+	if query == "" {
+		query = `{"":""}`
 	}
-	var info NetworkInfo
-	if err := json.NewDecoder(r.Body).Decode(&info); err != nil {
+	b := strings.NewReader(query)
+	r, err := client.Post(base+"/"+endpoint, "application/json", b)
+	if err != nil {
+		return fmt.Errorf("error calling %s: %w", endpoint, err)
+	}
+	if err := json.NewDecoder(r.Body).Decode(result); err != nil {
 		if err != nil {
-			return nil, fmt.Errorf("error decoding get_network_info respons: %w", err)
+			return fmt.Errorf("error decoding %s response: %w", endpoint, err)
 		}
 	}
-	return &info, nil
+	return nil
 }
 
 func peerCounter(client *http.Client, base string) func() float64 {
 	return func() float64 {
-		b := strings.NewReader(`{"":""}`)
-		r, err := client.Post(base+"/get_connections", "application/json", b)
-		if err != nil {
-			log.Printf("error calling get_connections: %s", err)
-			return -1.0
-		}
 		var conns Connections
-		if err := json.NewDecoder(r.Body).Decode(&conns); err != nil {
-			if err != nil {
-				log.Printf("error decoding get_connections response: %s", err)
-				return -1.0
-			}
+		if err := queryAPI(client, base, "get_connections", "", &conns); err != nil {
+			log.Print(err)
+			return -1.0
 		}
 		peers := 0
 		for _, p := range conns.Connections {
