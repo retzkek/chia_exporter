@@ -6,6 +6,54 @@ type NetworkInfo struct {
 	Success       bool
 }
 
+//TODO figure out what type some of these fields should be, set to interface{} for now
+type BlockchainState struct {
+	BlockchainState struct {
+		Difficulty                  int
+		GenesisChallengeInitialized bool `json:"genesis_challenge_initialized"`
+		MempoolSize                 int  `json:"mempool_size"`
+		Peak                        struct {
+			ChallengeBlockInfoHash string `json:"challenge_block_info_hash"`
+			ChallengeVDFOutput     struct {
+				Data string
+			} `json:"challenge_vdf_output"`
+			Deficit                            int
+			FarmerPuzzleHash                   string `json:"farmer_puzzle_hash"`
+			Fees                               float64
+			FinishedChallengeSlotHashes        interface{} `json:"finished_challenge_slot_hashes"`
+			FinishedInfusedChallengeSlotHashes interface{} `json:"finished_infused_challenge_slot_hashes"`
+			HeaderHash                         string      `json:"header_hash"`
+			Height                             int
+			InfusedChallengeVDFOutput          struct {
+				Date string
+			} `json:"infused_challenge_vdf_output"`
+			Overflow                   bool
+			PoolPuzzleHash             string      `json:"pool_puzzle_hash"`
+			PrevHash                   string      `json:"prev_hash"`
+			PrevTransactionBlockHash   string      `json:"prev_transaction_block_hash"`
+			PrevTransactionBlockHeight int         `json:"prev_transaction_block_height"`
+			RequiredIters              int         `json:"required_iters"`
+			RewardClaimsIncorporated   interface{} `json:"reward_claims_incorporated"`
+			RewardInfusionNewChallenge string      `json:"reward_infusion_new_challenge"`
+			SignagePointIndex          int         `json:"signage_point_index"`
+			SubEpochSummaryIncluded    interface{} `json:"sub_epoch_summary_included"`
+			SubSlotIters               int         `json:"sub_slot_iters"`
+			Timestamp                  interface{}
+			TotalIters                 int `json:"total_iters"`
+			Weight                     int
+		}
+		Space        int64
+		SubSlotIters int `json:"sub_slot_iters"`
+		Sync         struct {
+			SyncMode           bool `json:"sync_mode"`
+			SyncProgressHeight int  `json:"sync_progress_height"`
+			SyncTipHeight      int  `json:"sync_tip_height"`
+			Synced             bool
+		}
+	} `json:"blockchain_state"`
+	Success bool
+}
+
 // Chia node types from server/outbound_message.py
 const (
 	NodeTypeNone = iota

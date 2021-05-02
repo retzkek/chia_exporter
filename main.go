@@ -107,6 +107,7 @@ func (cc ChiaCollector) Describe(ch chan<- *prometheus.Desc) {
 // Collect queries Chia and returns metrics on ch.
 func (cc ChiaCollector) Collect(ch chan<- prometheus.Metric) {
 	cc.collectConnections(ch)
+	cc.collectBlockchainState(ch)
 }
 
 func (cc ChiaCollector) collectConnections(ch chan<- prometheus.Metric) {
@@ -132,4 +133,63 @@ func (cc ChiaCollector) collectConnections(ch chan<- prometheus.Metric) {
 			strconv.Itoa(nt+1),
 		)
 	}
+}
+
+func (cc ChiaCollector) collectBlockchainState(ch chan<- prometheus.Metric) {
+	var bs BlockchainState
+	if err := queryAPI(cc.client, cc.baseURL, "get_blockchain_state", "", &bs); err != nil {
+		log.Print(err)
+		return
+	}
+	sync := 0.0
+	if bs.BlockchainState.Sync.SyncMode {
+		sync = 1.0
+	} else if bs.BlockchainState.Sync.Synced {
+		sync = 2.0
+	}
+	ch <- prometheus.MustNewConstMetric(
+		prometheus.NewDesc(
+			"chia_blockchain_sync_status",
+			"Sync status, 0=not synced, 1=syncing, 2=synced",
+			nil, nil,
+		),
+		prometheus.GaugeValue,
+		sync,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		prometheus.NewDesc(
+			"chia_blockchain_height",
+			"Current height",
+			nil, nil,
+		),
+		prometheus.GaugeValue,
+		float64(bs.BlockchainState.Peak.Height),
+	)
+	ch <- prometheus.MustNewConstMetric(
+		prometheus.NewDesc(
+			"chia_blockchain_difficulty",
+			"Current difficulty",
+			nil, nil,
+		),
+		prometheus.GaugeValue,
+		float64(bs.BlockchainState.Difficulty),
+	)
+	ch <- prometheus.MustNewConstMetric(
+		prometheus.NewDesc(
+			"chia_blockchain_space_bytes",
+			"Estimated current netspace",
+			nil, nil,
+		),
+		prometheus.GaugeValue,
+		float64(bs.BlockchainState.Space),
+	)
+	ch <- prometheus.MustNewConstMetric(
+		prometheus.NewDesc(
+			"chia_blockchain_total_iters",
+			"Current total iterations",
+			nil, nil,
+		),
+		prometheus.GaugeValue,
+		float64(bs.BlockchainState.Peak.TotalIters),
+	)
 }
