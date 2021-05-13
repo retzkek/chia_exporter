@@ -19,6 +19,8 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -32,14 +34,15 @@ import (
 )
 
 var (
-	addr = flag.String("listen", ":9133", "The address to listen on for HTTP requests.")
-	cert = flag.String("cert", "$HOME/.chia/mainnet/config/ssl/full_node/private_full_node.crt", "The full node SSL certificate.")
-	key  = flag.String("key", "$HOME/.chia/mainnet/config/ssl/full_node/private_full_node.key", "The full node SSL key.")
-	url  = flag.String("url", "https://localhost:8555", "The base URL for the full node RPC endpoint.")
+	addr   = flag.String("listen", ":9133", "The address to listen on for HTTP requests.")
+	cert   = flag.String("cert", "$HOME/.chia/mainnet/config/ssl/full_node/private_full_node.crt", "The full node SSL certificate.")
+	key    = flag.String("key", "$HOME/.chia/mainnet/config/ssl/full_node/private_full_node.key", "The full node SSL key.")
+	url    = flag.String("url", "https://localhost:8555", "The base URL for the full node RPC endpoint.")
+	wallet = flag.String("wallet", "https://localhost:9256", "The base URL for the wallet RPC endpoint.")
 )
 
 var (
-	Version = "0.1"
+	Version = "0.2"
 )
 
 func main() {
@@ -57,8 +60,9 @@ func main() {
 	log.Printf("Connected to node at %s on %s", *url, info.NetworkName)
 
 	cc := ChiaCollector{
-		client:  client,
-		baseURL: *url,
+		client:    client,
+		baseURL:   *url,
+		walletURL: *wallet,
 	}
 	prometheus.MustRegister(cc)
 
@@ -109,7 +113,9 @@ func queryAPI(client *http.Client, base, endpoint, query string, result interfac
 	if err != nil {
 		return fmt.Errorf("error calling %s: %w", endpoint, err)
 	}
-	if err := json.NewDecoder(r.Body).Decode(result); err != nil {
+	//t := io.TeeReader(r.Body, os.Stdout)
+	t := io.TeeReader(r.Body, ioutil.Discard)
+	if err := json.NewDecoder(t).Decode(result); err != nil {
 		if err != nil {
 			return fmt.Errorf("error decoding %s response: %w", endpoint, err)
 		}
@@ -118,8 +124,9 @@ func queryAPI(client *http.Client, base, endpoint, query string, result interfac
 }
 
 type ChiaCollector struct {
-	client  *http.Client
-	baseURL string
+	client    *http.Client
+	baseURL   string
+	walletURL string
 }
 
 // Describe is implemented with DescribeByCollect.
@@ -131,6 +138,7 @@ func (cc ChiaCollector) Describe(ch chan<- *prometheus.Desc) {
 func (cc ChiaCollector) Collect(ch chan<- prometheus.Metric) {
 	cc.collectConnections(ch)
 	cc.collectBlockchainState(ch)
+	cc.collectWalletBalance(ch)
 }
 
 func (cc ChiaCollector) collectConnections(ch chan<- prometheus.Metric) {
@@ -215,4 +223,76 @@ func (cc ChiaCollector) collectBlockchainState(ch chan<- prometheus.Metric) {
 		prometheus.GaugeValue,
 		float64(bs.BlockchainState.Peak.TotalIters),
 	)
+}
+
+func (cc ChiaCollector) collectWalletBalance(ch chan<- prometheus.Metric) {
+	var ws Wallets
+	if err := queryAPI(cc.client, cc.walletURL, "get_wallets", "", &ws); err != nil {
+		log.Print(err)
+		return
+	}
+
+	confirmedBalanceDesc := prometheus.NewDesc(
+		"chia_wallet_confirmed_balance_mojo",
+		"Confirmed wallet balance.",
+		[]string{"id"}, nil,
+	)
+	unconfirmedBalanceDesc := prometheus.NewDesc(
+		"chia_wallet_unconfirmed_balance_mojo",
+		"Unconfirmed wallet balance.",
+		[]string{"id"}, nil,
+	)
+	spendableBalanceDesc := prometheus.NewDesc(
+		"chia_wallet_spendable_balance_mojo",
+		"Spendable wallet balance.",
+		[]string{"id"}, nil,
+	)
+	maxSendDesc := prometheus.NewDesc(
+		"chia_wallet_max_send_mojo",
+		"Maximum sendable amount.",
+		[]string{"id"}, nil,
+	)
+	pendingChangeDesc := prometheus.NewDesc(
+		"chia_wallet_pending_change_mojo",
+		"Pending change amount.",
+		[]string{"id"}, nil,
+	)
+
+	for _, w := range ws.Wallets {
+		var wb WalletBalance
+		if err := queryAPI(cc.client, cc.walletURL, "get_wallet_balance", fmt.Sprintf(`{"wallet_id":%d}`, w.ID), &wb); err != nil {
+			log.Print(err)
+			continue
+		}
+		ch <- prometheus.MustNewConstMetric(
+			confirmedBalanceDesc,
+			prometheus.GaugeValue,
+			float64(wb.WalletBalance.ConfirmedBalance),
+			strconv.Itoa(w.ID),
+		)
+		ch <- prometheus.MustNewConstMetric(
+			unconfirmedBalanceDesc,
+			prometheus.GaugeValue,
+			float64(wb.WalletBalance.UnconfirmedBalance),
+			strconv.Itoa(w.ID),
+		)
+		ch <- prometheus.MustNewConstMetric(
+			spendableBalanceDesc,
+			prometheus.GaugeValue,
+			float64(wb.WalletBalance.SpendableBalance),
+			strconv.Itoa(w.ID),
+		)
+		ch <- prometheus.MustNewConstMetric(
+			maxSendDesc,
+			prometheus.GaugeValue,
+			float64(wb.WalletBalance.MaxSendAmount),
+			strconv.Itoa(w.ID),
+		)
+		ch <- prometheus.MustNewConstMetric(
+			pendingChangeDesc,
+			prometheus.GaugeValue,
+			float64(wb.WalletBalance.PendingChange),
+			strconv.Itoa(w.ID),
+		)
+	}
 }

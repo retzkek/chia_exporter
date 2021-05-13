@@ -86,3 +86,25 @@ type Connections struct {
 	}
 	Success bool
 }
+
+type Wallets struct {
+	Wallets []struct {
+		ID   int
+		Name string
+		Type int
+		Data string
+	}
+	Success bool
+}
+
+type WalletBalance struct {
+	WalletBalance struct {
+		ConfirmedBalance   int64 `json:"confirmed_wallet_balance"`
+		MaxSendAmount      int64 `json:"max_send_amount"`
+		PendingChange      int64 `json:"pending_change"`
+		SpendableBalance   int64 `json:"spendable_balance"`
+		UnconfirmedBalance int64 `json:"unconfirmed_wallet_balance"`
+		WalletID           int   `json:"wallet_id"`
+	} `json:"wallet_balance"`
+	Success bool
+}
