@@ -42,7 +42,7 @@ var (
 )
 
 var (
-	Version = "0.2"
+	Version = "0.3"
 )
 
 func main() {

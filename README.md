@@ -76,9 +76,9 @@ endpoint.
 
 ### Connections
 
-The number of connections are collected for each node type from the
-[get_connections](https://github.com/Chia-Network/chia-blockchain/wiki/RPC-Interfaces#get_connections)
-endpoint.
+* The number of connections are collected for each node type from the
+  [get_connections](https://github.com/Chia-Network/chia-blockchain/wiki/RPC-Interfaces#get_connections)
+  endpoint.
 
 Node types (from
 [chia/server/outbound_message.py](https://github.com/Chia-Network/chia-blockchain/blob/main/chia/server/outbound_message.py#L10)):
@@ -92,6 +92,21 @@ Node types (from
 
 ### Wallet
 
-The wallet balances are collected from the [get_wallet_balance
-](https://github.com/Chia-Network/chia-blockchain/wiki/RPC-Interfaces#get_wallet_balance)
-endpoint.
+The list of wallets is obtained from the
+[get_wallets](https://github.com/Chia-Network/chia-blockchain/wiki/RPC-Interfaces#get_wallets)
+endpoint. The wallet metrics are collected for each wallet, and include an `id`
+label.
+
+* Balances are collected from the
+  [get_wallet_balance](https://github.com/Chia-Network/chia-blockchain/wiki/RPC-Interfaces#get_wallet_balance)
+  endpoint.
+
+* Sync status is collected from the
+  [get_sync_status](https://github.com/Chia-Network/chia-blockchain/wiki/RPC-Interfaces#get_sync_status)
+  endpoint.
+
+* Height is collected from the
+  [get_height_info](https://github.com/Chia-Network/chia-blockchain/wiki/RPC-Interfaces#get_height_info)
+  endpoint.
+
+
