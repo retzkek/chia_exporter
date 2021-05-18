@@ -138,7 +138,7 @@ func (cc ChiaCollector) Describe(ch chan<- *prometheus.Desc) {
 func (cc ChiaCollector) Collect(ch chan<- prometheus.Metric) {
 	cc.collectConnections(ch)
 	cc.collectBlockchainState(ch)
-	cc.collectWalletBalance(ch)
+	cc.collectWallets(ch)
 }
 
 func (cc ChiaCollector) collectConnections(ch chan<- prometheus.Metric) {
@@ -225,74 +225,128 @@ func (cc ChiaCollector) collectBlockchainState(ch chan<- prometheus.Metric) {
 	)
 }
 
-func (cc ChiaCollector) collectWalletBalance(ch chan<- prometheus.Metric) {
+func (cc ChiaCollector) collectWallets(ch chan<- prometheus.Metric) {
 	var ws Wallets
 	if err := queryAPI(cc.client, cc.walletURL, "get_wallets", "", &ws); err != nil {
 		log.Print(err)
 		return
 	}
+	for _, w := range ws.Wallets {
+		wid := strconv.Itoa(w.ID)
+		cc.collectWalletBalance(ch, wid)
+		cc.collectWalletSync(ch, wid)
+	}
+}
 
-	confirmedBalanceDesc := prometheus.NewDesc(
+var (
+	confirmedBalanceDesc = prometheus.NewDesc(
 		"chia_wallet_confirmed_balance_mojo",
 		"Confirmed wallet balance.",
 		[]string{"id"}, nil,
 	)
-	unconfirmedBalanceDesc := prometheus.NewDesc(
+	unconfirmedBalanceDesc = prometheus.NewDesc(
 		"chia_wallet_unconfirmed_balance_mojo",
 		"Unconfirmed wallet balance.",
 		[]string{"id"}, nil,
 	)
-	spendableBalanceDesc := prometheus.NewDesc(
+	spendableBalanceDesc = prometheus.NewDesc(
 		"chia_wallet_spendable_balance_mojo",
 		"Spendable wallet balance.",
 		[]string{"id"}, nil,
 	)
-	maxSendDesc := prometheus.NewDesc(
+	maxSendDesc = prometheus.NewDesc(
 		"chia_wallet_max_send_mojo",
 		"Maximum sendable amount.",
 		[]string{"id"}, nil,
 	)
-	pendingChangeDesc := prometheus.NewDesc(
+	pendingChangeDesc = prometheus.NewDesc(
 		"chia_wallet_pending_change_mojo",
 		"Pending change amount.",
 		[]string{"id"}, nil,
 	)
+)
 
-	for _, w := range ws.Wallets {
-		var wb WalletBalance
-		if err := queryAPI(cc.client, cc.walletURL, "get_wallet_balance", fmt.Sprintf(`{"wallet_id":%d}`, w.ID), &wb); err != nil {
-			log.Print(err)
-			continue
-		}
-		ch <- prometheus.MustNewConstMetric(
-			confirmedBalanceDesc,
-			prometheus.GaugeValue,
-			float64(wb.WalletBalance.ConfirmedBalance),
-			strconv.Itoa(w.ID),
-		)
-		ch <- prometheus.MustNewConstMetric(
-			unconfirmedBalanceDesc,
-			prometheus.GaugeValue,
-			float64(wb.WalletBalance.UnconfirmedBalance),
-			strconv.Itoa(w.ID),
-		)
-		ch <- prometheus.MustNewConstMetric(
-			spendableBalanceDesc,
-			prometheus.GaugeValue,
-			float64(wb.WalletBalance.SpendableBalance),
-			strconv.Itoa(w.ID),
-		)
-		ch <- prometheus.MustNewConstMetric(
-			maxSendDesc,
-			prometheus.GaugeValue,
-			float64(wb.WalletBalance.MaxSendAmount),
-			strconv.Itoa(w.ID),
-		)
-		ch <- prometheus.MustNewConstMetric(
-			pendingChangeDesc,
-			prometheus.GaugeValue,
-			float64(wb.WalletBalance.PendingChange),
-			strconv.Itoa(w.ID),
-		)
+func (cc ChiaCollector) collectWalletBalance(ch chan<- prometheus.Metric, wid string) {
+	var wb WalletBalance
+	q := fmt.Sprintf(`{"wallet_id":%s}`, wid)
+	if err := queryAPI(cc.client, cc.walletURL, "get_wallet_balance", q, &wb); err != nil {
+		log.Print(err)
+		return
 	}
+	ch <- prometheus.MustNewConstMetric(
+		confirmedBalanceDesc,
+		prometheus.GaugeValue,
+		float64(wb.WalletBalance.ConfirmedBalance),
+		wid,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		unconfirmedBalanceDesc,
+		prometheus.GaugeValue,
+		float64(wb.WalletBalance.UnconfirmedBalance),
+		wid,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		spendableBalanceDesc,
+		prometheus.GaugeValue,
+		float64(wb.WalletBalance.SpendableBalance),
+		wid,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		maxSendDesc,
+		prometheus.GaugeValue,
+		float64(wb.WalletBalance.MaxSendAmount),
+		wid,
+	)
+	ch <- prometheus.MustNewConstMetric(
+		pendingChangeDesc,
+		prometheus.GaugeValue,
+		float64(wb.WalletBalance.PendingChange),
+		wid,
+	)
+}
+
+var (
+	walletSyncStatusDesc = prometheus.NewDesc(
+		"chia_wallet_sync_status",
+		"Sync status, 0=not synced, 1=syncing, 2=synced",
+		[]string{"id"}, nil,
+	)
+	walletHeightDesc = prometheus.NewDesc(
+		"chia_wallet_height",
+		"Wallet synced height.",
+		[]string{"id"}, nil,
+	)
+)
+
+func (cc ChiaCollector) collectWalletSync(ch chan<- prometheus.Metric, wid string) {
+	var wss WalletSyncStatus
+	q := fmt.Sprintf(`{"wallet_id":%s}`, wid)
+	if err := queryAPI(cc.client, cc.walletURL, "get_sync_status", q, &wss); err != nil {
+		log.Print(err)
+		return
+	}
+	sync := 0.0
+	if wss.Syncing {
+		sync = 1.0
+	} else if wss.Synced {
+		sync = 2.0
+	}
+	ch <- prometheus.MustNewConstMetric(
+		walletSyncStatusDesc,
+		prometheus.GaugeValue,
+		sync,
+		wid,
+	)
+
+	var whi WalletHeightInfo
+	if err := queryAPI(cc.client, cc.walletURL, "get_height_info", q, &whi); err != nil {
+		log.Print(err)
+		return
+	}
+	ch <- prometheus.MustNewConstMetric(
+		walletHeightDesc,
+		prometheus.GaugeValue,
+		float64(whi.Height),
+		wid,
+	)
 }

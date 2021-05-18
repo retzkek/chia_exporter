@@ -108,3 +108,15 @@ type WalletBalance struct {
 	} `json:"wallet_balance"`
 	Success bool
 }
+
+type WalletSyncStatus struct {
+	GenesisInitialized bool `json:"genesis_initialized"`
+	Synced             bool
+	Syncing            bool
+	Succes             bool
+}
+
+type WalletHeightInfo struct {
+	Height  int64
+	Success bool
+}
