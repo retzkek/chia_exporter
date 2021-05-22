@@ -42,7 +42,7 @@ var (
 )
 
 var (
-	Version = "0.3"
+	Version = "0.4"
 )
 
 func main() {
@@ -55,9 +55,10 @@ func main() {
 	}
 	var info NetworkInfo
 	if err := queryAPI(client, *url, "get_network_info", "", &info); err != nil {
-		log.Fatal(err)
+		log.Print(err)
+	} else {
+		log.Printf("Connected to node at %s on %s", *url, info.NetworkName)
 	}
-	log.Printf("Connected to node at %s on %s", *url, info.NetworkName)
 
 	cc := ChiaCollector{
 		client:    client,
@@ -232,43 +233,63 @@ func (cc ChiaCollector) collectWallets(ch chan<- prometheus.Metric) {
 		return
 	}
 	for _, w := range ws.Wallets {
-		wid := strconv.Itoa(w.ID)
-		cc.collectWalletBalance(ch, wid)
-		cc.collectWalletSync(ch, wid)
+		w.StringID = strconv.Itoa(w.ID)
+		w.PublicKey = cc.getWalletPublicKey(w)
+		cc.collectWalletBalance(ch, w)
+		cc.collectWalletSync(ch, w)
 	}
+}
+
+// getWalletPublicKey returns the fingerprint of first public key associated
+// with the wallet.
+func (cc ChiaCollector) getWalletPublicKey(w Wallet) string {
+	var wpks WalletPublicKeys
+	q := fmt.Sprintf(`{"wallet_id":%d}`, w.ID)
+	if err := queryAPI(cc.client, cc.walletURL, "get_public_keys", q, &wpks); err != nil {
+		log.Print(err)
+		return ""
+	}
+	if len(wpks.PublicKeyFingerprints) < 1 {
+		log.Print("no public key")
+		return ""
+	}
+	if len(wpks.PublicKeyFingerprints) > 1 {
+		log.Print("more than one public key; returning first")
+	}
+	return strconv.Itoa(wpks.PublicKeyFingerprints[0])
 }
 
 var (
 	confirmedBalanceDesc = prometheus.NewDesc(
 		"chia_wallet_confirmed_balance_mojo",
 		"Confirmed wallet balance.",
-		[]string{"id"}, nil,
+		[]string{"wallet_id", "wallet_fingerprint"}, nil,
 	)
 	unconfirmedBalanceDesc = prometheus.NewDesc(
 		"chia_wallet_unconfirmed_balance_mojo",
 		"Unconfirmed wallet balance.",
-		[]string{"id"}, nil,
+		[]string{"wallet_id", "wallet_fingerprint"}, nil,
 	)
 	spendableBalanceDesc = prometheus.NewDesc(
 		"chia_wallet_spendable_balance_mojo",
 		"Spendable wallet balance.",
-		[]string{"id"}, nil,
+		[]string{"wallet_id", "wallet_fingerprint"}, nil,
 	)
 	maxSendDesc = prometheus.NewDesc(
 		"chia_wallet_max_send_mojo",
 		"Maximum sendable amount.",
-		[]string{"id"}, nil,
+		[]string{"wallet_id", "wallet_fingerprint"}, nil,
 	)
 	pendingChangeDesc = prometheus.NewDesc(
 		"chia_wallet_pending_change_mojo",
 		"Pending change amount.",
-		[]string{"id"}, nil,
+		[]string{"wallet_id", "wallet_fingerprint"}, nil,
 	)
 )
 
-func (cc ChiaCollector) collectWalletBalance(ch chan<- prometheus.Metric, wid string) {
+func (cc ChiaCollector) collectWalletBalance(ch chan<- prometheus.Metric, w Wallet) {
 	var wb WalletBalance
-	q := fmt.Sprintf(`{"wallet_id":%s}`, wid)
+	q := fmt.Sprintf(`{"wallet_id":%d}`, w.ID)
 	if err := queryAPI(cc.client, cc.walletURL, "get_wallet_balance", q, &wb); err != nil {
 		log.Print(err)
 		return
@@ -277,31 +298,31 @@ func (cc ChiaCollector) collectWalletBalance(ch chan<- prometheus.Metric, wid st
 		confirmedBalanceDesc,
 		prometheus.GaugeValue,
 		float64(wb.WalletBalance.ConfirmedBalance),
-		wid,
+		w.StringID, w.PublicKey,
 	)
 	ch <- prometheus.MustNewConstMetric(
 		unconfirmedBalanceDesc,
 		prometheus.GaugeValue,
 		float64(wb.WalletBalance.UnconfirmedBalance),
-		wid,
+		w.StringID, w.PublicKey,
 	)
 	ch <- prometheus.MustNewConstMetric(
 		spendableBalanceDesc,
 		prometheus.GaugeValue,
 		float64(wb.WalletBalance.SpendableBalance),
-		wid,
+		w.StringID, w.PublicKey,
 	)
 	ch <- prometheus.MustNewConstMetric(
 		maxSendDesc,
 		prometheus.GaugeValue,
 		float64(wb.WalletBalance.MaxSendAmount),
-		wid,
+		w.StringID, w.PublicKey,
 	)
 	ch <- prometheus.MustNewConstMetric(
 		pendingChangeDesc,
 		prometheus.GaugeValue,
 		float64(wb.WalletBalance.PendingChange),
-		wid,
+		w.StringID, w.PublicKey,
 	)
 }
 
@@ -309,18 +330,18 @@ var (
 	walletSyncStatusDesc = prometheus.NewDesc(
 		"chia_wallet_sync_status",
 		"Sync status, 0=not synced, 1=syncing, 2=synced",
-		[]string{"id"}, nil,
+		[]string{"wallet_id", "wallet_fingerprint"}, nil,
 	)
 	walletHeightDesc = prometheus.NewDesc(
 		"chia_wallet_height",
 		"Wallet synced height.",
-		[]string{"id"}, nil,
+		[]string{"wallet_id", "wallet_fingerprint"}, nil,
 	)
 )
 
-func (cc ChiaCollector) collectWalletSync(ch chan<- prometheus.Metric, wid string) {
+func (cc ChiaCollector) collectWalletSync(ch chan<- prometheus.Metric, w Wallet) {
 	var wss WalletSyncStatus
-	q := fmt.Sprintf(`{"wallet_id":%s}`, wid)
+	q := fmt.Sprintf(`{"wallet_id":%d}`, w.ID)
 	if err := queryAPI(cc.client, cc.walletURL, "get_sync_status", q, &wss); err != nil {
 		log.Print(err)
 		return
@@ -335,7 +356,7 @@ func (cc ChiaCollector) collectWalletSync(ch chan<- prometheus.Metric, wid strin
 		walletSyncStatusDesc,
 		prometheus.GaugeValue,
 		sync,
-		wid,
+		w.StringID, w.PublicKey,
 	)
 
 	var whi WalletHeightInfo
@@ -347,6 +368,6 @@ func (cc ChiaCollector) collectWalletSync(ch chan<- prometheus.Metric, wid strin
 		walletHeightDesc,
 		prometheus.GaugeValue,
 		float64(whi.Height),
-		wid,
+		w.StringID, w.PublicKey,
 	)
 }

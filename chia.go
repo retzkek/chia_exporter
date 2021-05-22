@@ -87,13 +87,17 @@ type Connections struct {
 	Success bool
 }
 
+type Wallet struct {
+	ID        int
+	Name      string
+	Type      int
+	Data      string
+	StringID  string
+	PublicKey string
+}
+
 type Wallets struct {
-	Wallets []struct {
-		ID   int
-		Name string
-		Type int
-		Data string
-	}
+	Wallets []Wallet
 	Success bool
 }
 
@@ -119,4 +123,9 @@ type WalletSyncStatus struct {
 type WalletHeightInfo struct {
 	Height  int64
 	Success bool
+}
+
+type WalletPublicKeys struct {
+	PublicKeyFingerprints []int `json:"public_key_fingerprints"`
+	Success               bool
 }

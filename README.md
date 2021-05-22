@@ -53,25 +53,25 @@ chia_peers_count{type="5"} 0
 chia_peers_count{type="6"} 1
 # HELP chia_wallet_confirmed_balance_mojo Confirmed wallet balance.
 # TYPE chia_wallet_confirmed_balance_mojo gauge
-chia_wallet_confirmed_balance_mojo{id="1"} 100
+chia_wallet_confirmed_balance_mojo{wallet_id="1",wallet_fingerprint="103402894"} 100
 # HELP chia_wallet_height Wallet synced height.
 # TYPE chia_wallet_height gauge
-chia_wallet_height{id="1"} 30756
+chia_wallet_height{wallet_id="1",wallet_fingerprint="103402894"} 30756
 # HELP chia_wallet_max_send_mojo Maximum sendable amount.
 # TYPE chia_wallet_max_send_mojo gauge
-chia_wallet_max_send_mojo{id="1"} 100
+chia_wallet_max_send_mojo{wallet_id="1",wallet_fingerprint="103402894"} 100
 # HELP chia_wallet_pending_change_mojo Pending change amount.
 # TYPE chia_wallet_pending_change_mojo gauge
-chia_wallet_pending_change_mojo{id="1"} 0
+chia_wallet_pending_change_mojo{wallet_id="1",wallet_fingerprint="103402894"} 0
 # HELP chia_wallet_spendable_balance_mojo Spendable wallet balance.
 # TYPE chia_wallet_spendable_balance_mojo gauge
-chia_wallet_spendable_balance_mojo{id="1"} 100
+chia_wallet_spendable_balance_mojo{wallet_id="1",wallet_fingerprint="103402894"} 100
 # HELP chia_wallet_sync_status Sync status, 0=not synced, 1=syncing, 2=synced
 # TYPE chia_wallet_sync_status gauge
-chia_wallet_sync_status{id="1"} 0
+chia_wallet_sync_status{wallet_id="1",wallet_fingerprint="103402894"} 0
 # HELP chia_wallet_unconfirmed_balance_mojo Unconfirmed wallet balance.
 # TYPE chia_wallet_unconfirmed_balance_mojo gauge
-chia_wallet_unconfirmed_balance_mojo{id="1"} 100
+chia_wallet_unconfirmed_balance_mojo{wallet_id="1",wallet_fingerprint="103402894"} 100
 ```
 
 ### Blockchain
@@ -100,8 +100,8 @@ Node types (from
 
 The list of wallets is obtained from the
 [get_wallets](https://github.com/Chia-Network/chia-blockchain/wiki/RPC-Interfaces#get_wallets)
-endpoint. The wallet metrics are collected for each wallet, and include an `id`
-label.
+endpoint. The wallet metrics are collected for each wallet, and include
+`wallet_id` and `wallet_fingerprint` labels.
 
 * Balances are collected from the
   [get_wallet_balance](https://github.com/Chia-Network/chia-blockchain/wiki/RPC-Interfaces#get_wallet_balance)
