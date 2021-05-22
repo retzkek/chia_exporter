@@ -42,7 +42,7 @@ var (
 )
 
 var (
-	Version = "0.4"
+	Version = "0.4.1"
 )
 
 func main() {
@@ -213,7 +213,7 @@ func (cc ChiaCollector) collectBlockchainState(ch chan<- prometheus.Metric) {
 			nil, nil,
 		),
 		prometheus.GaugeValue,
-		float64(bs.BlockchainState.Space),
+		bs.BlockchainState.Space,
 	)
 	ch <- prometheus.MustNewConstMetric(
 		prometheus.NewDesc(

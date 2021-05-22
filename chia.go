@@ -42,7 +42,7 @@ type BlockchainState struct {
 			TotalIters                 int `json:"total_iters"`
 			Weight                     int
 		}
-		Space        int64
+		Space        float64
 		SubSlotIters int `json:"sub_slot_iters"`
 		Sync         struct {
 			SyncMode           bool `json:"sync_mode"`
