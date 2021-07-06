@@ -65,6 +65,7 @@ func main() {
 		client:    client,
 		baseURL:   *url,
 		walletURL: *wallet,
+		harvesterURL: *harvester,
 	}
 	prometheus.MustRegister(cc)
 
