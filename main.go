@@ -241,6 +241,7 @@ func (cc ChiaCollector) collectWallets(ch chan<- prometheus.Metric) {
 		w.PublicKey = cc.getWalletPublicKey(w)
 		cc.collectWalletBalance(ch, w)
 		cc.collectWalletSync(ch, w)
+		cc.collectFarmedAmount(ch, w)
 	}
 }
 
@@ -372,6 +373,65 @@ func (cc ChiaCollector) collectWalletSync(ch chan<- prometheus.Metric, w Wallet)
 		walletHeightDesc,
 		prometheus.GaugeValue,
 		float64(whi.Height),
+		w.StringID, w.PublicKey,
+	)
+}
+
+func (cc ChiaCollector) collectFarmedAmount(ch chan<- prometheus.Metric, w Wallet) {
+	var farmed FarmedAmount
+	q := fmt.Sprintf(`{"wallet_id":%d}`, w.ID)
+	if err := queryAPI(cc.client, cc.walletURL, "get_farmed_amount", q, &farmed); err != nil {
+		log.Print(err)
+		return
+	}
+	ch <- prometheus.MustNewConstMetric(
+	  prometheus.NewDesc(
+		  "chia_wallet_farmed_amount",
+		  "Farmed amount",
+		  []string{"wallet_id", "wallet_fingerprint"}, nil,
+	  ),
+		prometheus.GaugeValue,
+		float64(farmed.FarmedAmount),
+		w.StringID, w.PublicKey,
+	)
+	ch <- prometheus.MustNewConstMetric(
+	  prometheus.NewDesc(
+		  "chia_wallet_reward_amount",
+		  "Reward amount",
+		  []string{"wallet_id", "wallet_fingerprint"}, nil,
+	  ),
+		prometheus.GaugeValue,
+		float64(farmed.RewardAmount),
+		w.StringID, w.PublicKey,
+	)
+	ch <- prometheus.MustNewConstMetric(
+	  prometheus.NewDesc(
+		  "chia_wallet_fee_amount",
+		  "Fee amount amount",
+		  []string{"wallet_id", "wallet_fingerprint"}, nil,
+	  ),
+		prometheus.GaugeValue,
+		float64(farmed.FeeAmount),
+		w.StringID, w.PublicKey,
+	)
+	ch <- prometheus.MustNewConstMetric(
+	  prometheus.NewDesc(
+		  "chia_wallet_last_height_farmed",
+		  "Last height farmed",
+		  []string{"wallet_id", "wallet_fingerprint"}, nil,
+	  ),
+		prometheus.GaugeValue,
+		float64(farmed.LastHeightFarmed),
+		w.StringID, w.PublicKey,
+	)
+	ch <- prometheus.MustNewConstMetric(
+	  prometheus.NewDesc(
+		  "chia_wallet_pool_reward_amount",
+		  "Pool Reward amount",
+		  []string{"wallet_id", "wallet_fingerprint"}, nil,
+	  ),
+		prometheus.GaugeValue,
+		float64(farmed.PoolRewardAmount),
 		w.StringID, w.PublicKey,
 	)
 }
