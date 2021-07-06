@@ -129,3 +129,12 @@ type WalletPublicKeys struct {
 	PublicKeyFingerprints []int `json:"public_key_fingerprints"`
 	Success               bool
 }
+
+type FarmedAmount struct {
+  FarmedAmount          int64    `json:"farmed_amount"`
+	RewardAmount          int64    `json:"farmer_reward_amount"`
+	FeeAmount             int64    `json:"fee_amount"`
+	LastHeightFarmed      int64    `json:"last_height_farmed"`
+	PoolRewardAmount      int64    `json:"pool_reward_amount"`
+	Success               bool
+}
