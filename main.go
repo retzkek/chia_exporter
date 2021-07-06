@@ -39,7 +39,7 @@ var (
 	key    = flag.String("key", "$HOME/.chia/mainnet/config/ssl/full_node/private_full_node.key", "The full node SSL key.")
 	url    = flag.String("url", "https://localhost:8555", "The base URL for the full node RPC endpoint.")
 	wallet = flag.String("wallet", "https://localhost:9256", "The base URL for the wallet RPC endpoint.")
-	farmer = flag.String("farmer", "https://localhost:8559", "The base URL for the farmer RPC endpoint.")
+	harvester = flag.String("harvester", "https://localhost:8560", "The base URL for the harvester RPC endpoint.")
 )
 
 var (
