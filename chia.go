@@ -138,3 +138,17 @@ type FarmedAmount struct {
 	PoolRewardAmount      int64    `json:"pool_reward_amount"`
 	Success               bool
 }
+
+type PoolState struct {
+  PoolState             []struct {
+    CurrentDificulty      int64     `json:"current_difficulty"`
+    CurrentPoints         int64     `json:"current_points"`
+    PointsAcknowledged24h []interface{}   `json:"points_acknowledged_24h"`
+    PointsFound24h        []interface{}   `json:"points_found_24h"`
+    PoolConfig            struct {
+      LauncherId            string     `json:"launcher_id"`
+      PoolURL               string     `json:"pool_url"`
+    } `json:"pool_config"`
+  }      `json:"pool_state"`
+	Success               bool
+}
