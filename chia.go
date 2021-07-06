@@ -129,3 +129,10 @@ type WalletPublicKeys struct {
 	PublicKeyFingerprints []int `json:"public_key_fingerprints"`
 	Success               bool
 }
+
+type PlotFiles struct {
+	FailedToOpen          []interface{}      `json:"failed_to_open_filenames"`
+	NotFound              []interface{}      `json:"not_found_filenames"`
+	Plots                 []interface{}      `json:"plots"`
+	Success               bool
+}
