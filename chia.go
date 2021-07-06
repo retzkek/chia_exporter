@@ -139,6 +139,13 @@ type FarmedAmount struct {
 	Success               bool
 }
 
+type PlotFiles struct {
+	FailedToOpen          []interface{}      `json:"failed_to_open_filenames"`
+	NotFound              []interface{}      `json:"not_found_filenames"`
+	Plots                 []interface{}      `json:"plots"`
+	Success               bool
+}
+
 type PoolState struct {
   PoolState             []struct {
     CurrentDificulty      int64     `json:"current_difficulty"`
