@@ -72,6 +72,21 @@ chia_wallet_sync_status{wallet_id="1",wallet_fingerprint="103402894"} 0
 # HELP chia_wallet_unconfirmed_balance_mojo Unconfirmed wallet balance.
 # TYPE chia_wallet_unconfirmed_balance_mojo gauge
 chia_wallet_unconfirmed_balance_mojo{wallet_id="1",wallet_fingerprint="103402894"} 100
+# HELP chia_wallet_farmed_amount Farmed amount
+# TYPE chia_wallet_farmed_amount gauge
+chia_wallet_farmed_amount{wallet_fingerprint="103402894",wallet_id="1"} 0
+# HELP chia_wallet_fee_amount Fee amount amount
+# TYPE chia_wallet_fee_amount gauge
+chia_wallet_fee_amount{wallet_fingerprint="103402894",wallet_id="1"} 0
+# HELP chia_wallet_last_height_farmed Last height farmed
+# TYPE chia_wallet_last_height_farmed gauge
+chia_wallet_last_height_farmed{wallet_fingerprint="103402894",wallet_id="1"} 0
+# HELP chia_wallet_pool_reward_amount Pool Reward amount
+# TYPE chia_wallet_pool_reward_amount gauge
+chia_wallet_pool_reward_amount{wallet_fingerprint="103402894",wallet_id="1"} 0
+# HELP chia_wallet_reward_amount Reward amount
+# TYPE chia_wallet_reward_amount gauge
+chia_wallet_reward_amount{wallet_fingerprint="103402894",wallet_id="1"} 0
 ```
 
 ### Blockchain
@@ -115,4 +130,7 @@ endpoint. The wallet metrics are collected for each wallet, and include
   [get_height_info](https://github.com/Chia-Network/chia-blockchain/wiki/RPC-Interfaces#get_height_info)
   endpoint.
 
+* Farmed ammount and reward are collected from the
+  [get_farmed_amount](https://github.com/Chia-Network/chia-blockchain/wiki/RPC-Interfaces#get_farmed_amount)
+  endpoint.
 
