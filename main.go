@@ -381,51 +381,51 @@ func (cc ChiaCollector) collectFarmedAmount(ch chan<- prometheus.Metric, w Walle
 		return
 	}
 	ch <- prometheus.MustNewConstMetric(
-	  prometheus.NewDesc(
-		  "chia_wallet_farmed_amount",
-		  "Farmed amount",
-		  []string{"wallet_id", "wallet_fingerprint"}, nil,
-	  ),
+		prometheus.NewDesc(
+			"chia_wallet_farmed_amount",
+			"Farmed amount",
+			[]string{"wallet_id", "wallet_fingerprint"}, nil,
+		),
 		prometheus.GaugeValue,
 		float64(farmed.FarmedAmount),
 		w.StringID, w.PublicKey,
 	)
 	ch <- prometheus.MustNewConstMetric(
-	  prometheus.NewDesc(
-		  "chia_wallet_reward_amount",
-		  "Reward amount",
-		  []string{"wallet_id", "wallet_fingerprint"}, nil,
-	  ),
+		prometheus.NewDesc(
+			"chia_wallet_reward_amount",
+			"Reward amount",
+			[]string{"wallet_id", "wallet_fingerprint"}, nil,
+		),
 		prometheus.GaugeValue,
 		float64(farmed.RewardAmount),
 		w.StringID, w.PublicKey,
 	)
 	ch <- prometheus.MustNewConstMetric(
-	  prometheus.NewDesc(
-		  "chia_wallet_fee_amount",
-		  "Fee amount amount",
-		  []string{"wallet_id", "wallet_fingerprint"}, nil,
-	  ),
+		prometheus.NewDesc(
+			"chia_wallet_fee_amount",
+			"Fee amount amount",
+			[]string{"wallet_id", "wallet_fingerprint"}, nil,
+		),
 		prometheus.GaugeValue,
 		float64(farmed.FeeAmount),
 		w.StringID, w.PublicKey,
 	)
 	ch <- prometheus.MustNewConstMetric(
-	  prometheus.NewDesc(
-		  "chia_wallet_last_height_farmed",
-		  "Last height farmed",
-		  []string{"wallet_id", "wallet_fingerprint"}, nil,
-	  ),
+		prometheus.NewDesc(
+			"chia_wallet_last_height_farmed",
+			"Last height farmed",
+			[]string{"wallet_id", "wallet_fingerprint"}, nil,
+		),
 		prometheus.GaugeValue,
 		float64(farmed.LastHeightFarmed),
 		w.StringID, w.PublicKey,
 	)
 	ch <- prometheus.MustNewConstMetric(
-	  prometheus.NewDesc(
-		  "chia_wallet_pool_reward_amount",
-		  "Pool Reward amount",
-		  []string{"wallet_id", "wallet_fingerprint"}, nil,
-	  ),
+		prometheus.NewDesc(
+			"chia_wallet_pool_reward_amount",
+			"Pool Reward amount",
+			[]string{"wallet_id", "wallet_fingerprint"}, nil,
+		),
 		prometheus.GaugeValue,
 		float64(farmed.PoolRewardAmount),
 		w.StringID, w.PublicKey,
