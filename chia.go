@@ -130,32 +130,9 @@ type WalletPublicKeys struct {
 	Success               bool
 }
 
-type FarmedAmount struct {
-  FarmedAmount          int64    `json:"farmed_amount"`
-	RewardAmount          int64    `json:"farmer_reward_amount"`
-	FeeAmount             int64    `json:"fee_amount"`
-	LastHeightFarmed      int64    `json:"last_height_farmed"`
-	PoolRewardAmount      int64    `json:"pool_reward_amount"`
-	Success               bool
-}
-
 type PlotFiles struct {
 	FailedToOpen          []interface{}      `json:"failed_to_open_filenames"`
 	NotFound              []interface{}      `json:"not_found_filenames"`
 	Plots                 []interface{}      `json:"plots"`
-	Success               bool
-}
-
-type PoolState struct {
-  PoolState             []struct {
-    CurrentDificulty      int64     `json:"current_difficulty"`
-    CurrentPoints         int64     `json:"current_points"`
-    PointsAcknowledged24h []interface{}   `json:"points_acknowledged_24h"`
-    PointsFound24h        []interface{}   `json:"points_found_24h"`
-    PoolConfig            struct {
-      LauncherId            string     `json:"launcher_id"`
-      PoolURL               string     `json:"pool_url"`
-    } `json:"pool_config"`
-  }      `json:"pool_state"`
 	Success               bool
 }
