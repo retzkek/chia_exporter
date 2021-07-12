@@ -72,6 +72,15 @@ chia_wallet_sync_status{wallet_id="1",wallet_fingerprint="103402894"} 0
 # HELP chia_wallet_unconfirmed_balance_mojo Unconfirmed wallet balance.
 # TYPE chia_wallet_unconfirmed_balance_mojo gauge
 chia_wallet_unconfirmed_balance_mojo{wallet_id="1",wallet_fingerprint="103402894"} 100
+# HELP chia_plots Number of plots currently using.
+# TYPE chia_plots gauge
+chia_plots 54
+# HELP chia_plots_failed_to_open Number of plots files failed to open.
+# TYPE chia_plots_failed_to_open gauge
+chia_plots_failed_to_open 0
+# HELP chia_plots_not_found Number of plots files not found.
+# TYPE chia_plots_not_found gauge
+chia_plots_not_found 0
 ```
 
 ### Blockchain
