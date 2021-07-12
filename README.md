@@ -115,4 +115,7 @@ endpoint. The wallet metrics are collected for each wallet, and include
   [get_height_info](https://github.com/Chia-Network/chia-blockchain/wiki/RPC-Interfaces#get_height_info)
   endpoint.
 
+* Pool state is collected from the
+  [get_pool_state](https://github.com/Chia-Network/chia-blockchain/wiki/RPC-Interfaces#get_pool_state)
+  endpoint (not yet documented). Need chia client version 1.2.0 or later
 
