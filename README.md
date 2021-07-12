@@ -115,4 +115,7 @@ endpoint. The wallet metrics are collected for each wallet, and include
   [get_height_info](https://github.com/Chia-Network/chia-blockchain/wiki/RPC-Interfaces#get_height_info)
   endpoint.
 
+* Plots data are collected from the
+  [get_plots](https://github.com/Chia-Network/chia-blockchain/wiki/RPC-Interfaces#get_plots)
+  endpoint.
 
