@@ -377,55 +377,55 @@ func (cc ChiaCollector) collectWalletSync(ch chan<- prometheus.Metric, w Wallet)
 }
 
 func (cc ChiaCollector) collectPoolState(ch chan<- prometheus.Metric) {
-  var pools PoolState
-  if err := queryAPI(cc.client, cc.farmerURL, "get_pool_state", "", &pools); err != nil {
-    log.Print(err)
-    return
-  }
+	var pools PoolState
+	if err := queryAPI(cc.client, cc.farmerURL, "get_pool_state", "", &pools); err != nil {
+		log.Print(err)
+		return
+	}
 	for _, p := range pools.PoolState {
-	  ch <- prometheus.MustNewConstMetric(
-		  prometheus.NewDesc(
-			  "chia_pool_current_difficulty",
-			  "Current difficulty on pool.",
-			  []string{"launcher_id","pool_url"}, nil,
-		  ),
-		  prometheus.GaugeValue,
-		  float64(p.CurrentDificulty),
-      p.PoolConfig.LauncherId,
-      p.PoolConfig.PoolURL,
-	  )
-	  ch <- prometheus.MustNewConstMetric(
-		  prometheus.NewDesc(
-			  "chia_pool_current_points",
-			  "Current points on pool.",
-			  []string{"launcher_id","pool_url"}, nil,
-		  ),
-		  prometheus.GaugeValue,
-		  float64(p.CurrentPoints),
-      p.PoolConfig.LauncherId,
-      p.PoolConfig.PoolURL,
-	  )
-	  ch <- prometheus.MustNewConstMetric(
-		  prometheus.NewDesc(
-			  "chia_pool_points_acknowledged_24h",
-			  "Points acknowledged last 24h on pool.",
-			  []string{"launcher_id","pool_url"}, nil,
-		  ),
-		  prometheus.GaugeValue,
-		  float64(len(p.PointsAcknowledged24h)),
-      p.PoolConfig.LauncherId,
-      p.PoolConfig.PoolURL,
-	  )
-	  ch <- prometheus.MustNewConstMetric(
-		  prometheus.NewDesc(
-			  "chia_pool_points_found_24h",
-			  "Points found last 24h on pool.",
-			  []string{"launcher_id","pool_url"}, nil,
-		  ),
-		  prometheus.GaugeValue,
-		  float64(len(p.PointsFound24h)),
-      p.PoolConfig.LauncherId,
-      p.PoolConfig.PoolURL,
-	  )
-  }
+		ch <- prometheus.MustNewConstMetric(
+			prometheus.NewDesc(
+				"chia_pool_current_difficulty",
+				"Current difficulty on pool.",
+				[]string{"launcher_id", "pool_url"}, nil,
+			),
+			prometheus.GaugeValue,
+			float64(p.CurrentDificulty),
+			p.PoolConfig.LauncherId,
+			p.PoolConfig.PoolURL,
+		)
+		ch <- prometheus.MustNewConstMetric(
+			prometheus.NewDesc(
+				"chia_pool_current_points",
+				"Current points on pool.",
+				[]string{"launcher_id", "pool_url"}, nil,
+			),
+			prometheus.GaugeValue,
+			float64(p.CurrentPoints),
+			p.PoolConfig.LauncherId,
+			p.PoolConfig.PoolURL,
+		)
+		ch <- prometheus.MustNewConstMetric(
+			prometheus.NewDesc(
+				"chia_pool_points_acknowledged_24h",
+				"Points acknowledged last 24h on pool.",
+				[]string{"launcher_id", "pool_url"}, nil,
+			),
+			prometheus.GaugeValue,
+			float64(len(p.PointsAcknowledged24h)),
+			p.PoolConfig.LauncherId,
+			p.PoolConfig.PoolURL,
+		)
+		ch <- prometheus.MustNewConstMetric(
+			prometheus.NewDesc(
+				"chia_pool_points_found_24h",
+				"Points found last 24h on pool.",
+				[]string{"launcher_id", "pool_url"}, nil,
+			),
+			prometheus.GaugeValue,
+			float64(len(p.PointsFound24h)),
+			p.PoolConfig.LauncherId,
+			p.PoolConfig.PoolURL,
+		)
+	}
 }
