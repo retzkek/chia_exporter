@@ -87,6 +87,27 @@ chia_wallet_pool_reward_amount{wallet_fingerprint="103402894",wallet_id="1"} 0
 # HELP chia_wallet_reward_amount Reward amount
 # TYPE chia_wallet_reward_amount gauge
 chia_wallet_reward_amount{wallet_fingerprint="103402894",wallet_id="1"} 0
+# HELP chia_pool_current_difficulty Current difficulty on pool.
+# TYPE chia_pool_current_difficulty gauge
+chia_pool_current_difficulty{launcher_id="0x...",pool_url="https://pool.yyy.y"} 1
+# HELP chia_pool_current_points Current points on pool.
+# TYPE chia_pool_current_points gauge
+chia_pool_current_points{launcher_id="0x...",pool_url="https://pool.yyy.y"} 12
+# HELP chia_pool_points_acknowledged_24h Points acknowledged last 24h on pool.
+# TYPE chia_pool_points_acknowledged_24h gauge
+chia_pool_points_acknowledged_24h{launcher_id="0x...",pool_url="https://pool.yyy.y"} 5
+# HELP chia_pool_points_found_24h Points found last 24h on pool.
+# TYPE chia_pool_points_found_24h gauge
+chia_pool_points_found_24h{launcher_id="0x...",pool_url="https://pool.xchpool.org"} 5
+# HELP chia_plots Number of plots currently using.
+# TYPE chia_plots gauge
+chia_plots 54
+# HELP chia_plots_failed_to_open Number of plots files failed to open.
+# TYPE chia_plots_failed_to_open gauge
+chia_plots_failed_to_open 0
+# HELP chia_plots_not_found Number of plots files not found.
+# TYPE chia_plots_not_found gauge
+chia_plots_not_found 0
 ```
 
 ### Blockchain
@@ -132,5 +153,12 @@ endpoint. The wallet metrics are collected for each wallet, and include
 
 * Farmed ammount and reward are collected from the
   [get_farmed_amount](https://github.com/Chia-Network/chia-blockchain/wiki/RPC-Interfaces#get_farmed_amount)
+
+* Pool state is collected from the
+  [get_pool_state](https://github.com/Chia-Network/chia-blockchain/wiki/RPC-Interfaces#get_pool_state)
+  endpoint (not yet documented). Need chia client version 1.2.0 or later
+
+* Plots data are collected from the
+  [get_plots](https://github.com/Chia-Network/chia-blockchain/wiki/RPC-Interfaces#get_plots)
   endpoint.
 

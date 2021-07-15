@@ -138,3 +138,36 @@ type FarmedAmount struct {
 	PoolRewardAmount int64 `json:"pool_reward_amount"`
 	Success          bool
 }
+
+type PoolState struct {
+	PoolState []struct {
+		CurrentDificulty      int64        `json:"current_difficulty"`
+		CurrentPoints         int64        `json:"current_points"`
+		PointsAcknowledged24h [][2]float64 `json:"points_acknowledged_24h"`
+		PointsFound24h        [][2]float64 `json:"points_found_24h"`
+		PoolConfig            struct {
+			LauncherId string `json:"launcher_id"`
+			PoolURL    string `json:"pool_url"`
+		} `json:"pool_config"`
+	} `json:"pool_state"`
+	Success bool
+}
+
+type PlotData struct {
+	FileSize      int64   `json:"file_size"`
+	Filename      string  `json:"filename"`
+	PlotSeed      string  `json:"plot-seed"`
+	PlotID        string  `json:"plot_id"`
+	PublicKey     string  `json:"plot_public_key"`
+	PoolContract  string  `json:"pool_contract_puzzle_hash"`
+	PoolPublicKey string  `json:"pool_public_key"`
+	Size          int64   `json:"size"`
+	TimeModified  float64 `json:"time_modified"`
+}
+
+type PlotFiles struct {
+	FailedToOpen []PlotData `json:"failed_to_open_filenames"`
+	NotFound     []PlotData `json:"not_found_filenames"`
+	Plots        []PlotData `json:"plots"`
+	Success      bool
+}
