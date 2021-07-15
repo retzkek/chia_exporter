@@ -72,6 +72,18 @@ chia_wallet_sync_status{wallet_id="1",wallet_fingerprint="103402894"} 0
 # HELP chia_wallet_unconfirmed_balance_mojo Unconfirmed wallet balance.
 # TYPE chia_wallet_unconfirmed_balance_mojo gauge
 chia_wallet_unconfirmed_balance_mojo{wallet_id="1",wallet_fingerprint="103402894"} 100
+# HELP chia_pool_current_difficulty Current difficulty on pool.
+# TYPE chia_pool_current_difficulty gauge
+chia_pool_current_difficulty{launcher_id="0x...",pool_url="https://pool.yyy.y"} 1
+# HELP chia_pool_current_points Current points on pool.
+# TYPE chia_pool_current_points gauge
+chia_pool_current_points{launcher_id="0x...",pool_url="https://pool.yyy.y"} 12
+# HELP chia_pool_points_acknowledged_24h Points acknowledged last 24h on pool.
+# TYPE chia_pool_points_acknowledged_24h gauge
+chia_pool_points_acknowledged_24h{launcher_id="0x...",pool_url="https://pool.yyy.y"} 5
+# HELP chia_pool_points_found_24h Points found last 24h on pool.
+# TYPE chia_pool_points_found_24h gauge
+chia_pool_points_found_24h{launcher_id="0x...",pool_url="https://pool.xchpool.org"} 5
 # HELP chia_plots Number of plots currently using.
 # TYPE chia_plots gauge
 chia_plots 54
@@ -123,6 +135,10 @@ endpoint. The wallet metrics are collected for each wallet, and include
 * Height is collected from the
   [get_height_info](https://github.com/Chia-Network/chia-blockchain/wiki/RPC-Interfaces#get_height_info)
   endpoint.
+
+* Pool state is collected from the
+  [get_pool_state](https://github.com/Chia-Network/chia-blockchain/wiki/RPC-Interfaces#get_pool_state)
+  endpoint (not yet documented). Need chia client version 1.2.0 or later
 
 * Plots data are collected from the
   [get_plots](https://github.com/Chia-Network/chia-blockchain/wiki/RPC-Interfaces#get_plots)

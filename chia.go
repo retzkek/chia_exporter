@@ -130,6 +130,20 @@ type WalletPublicKeys struct {
 	Success               bool
 }
 
+type PoolState struct {
+	PoolState []struct {
+		CurrentDificulty      int64        `json:"current_difficulty"`
+		CurrentPoints         int64        `json:"current_points"`
+		PointsAcknowledged24h [][2]float64 `json:"points_acknowledged_24h"`
+		PointsFound24h        [][2]float64 `json:"points_found_24h"`
+		PoolConfig            struct {
+			LauncherId string `json:"launcher_id"`
+			PoolURL    string `json:"pool_url"`
+		} `json:"pool_config"`
+	} `json:"pool_state"`
+	Success bool
+}
+
 type PlotData struct {
 	FileSize      int64   `json:"file_size"`
 	Filename      string  `json:"filename"`
