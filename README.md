@@ -84,7 +84,15 @@ chia_pool_points_acknowledged_24h{launcher_id="0x...",pool_url="https://pool.yyy
 # HELP chia_pool_points_found_24h Points found last 24h on pool.
 # TYPE chia_pool_points_found_24h gauge
 chia_pool_points_found_24h{launcher_id="0x...",pool_url="https://pool.xchpool.org"} 5
-
+# HELP chia_plots Number of plots currently using.
+# TYPE chia_plots gauge
+chia_plots 54
+# HELP chia_plots_failed_to_open Number of plots files failed to open.
+# TYPE chia_plots_failed_to_open gauge
+chia_plots_failed_to_open 0
+# HELP chia_plots_not_found Number of plots files not found.
+# TYPE chia_plots_not_found gauge
+chia_plots_not_found 0
 ```
 
 ### Blockchain
@@ -131,4 +139,8 @@ endpoint. The wallet metrics are collected for each wallet, and include
 * Pool state is collected from the
   [get_pool_state](https://github.com/Chia-Network/chia-blockchain/wiki/RPC-Interfaces#get_pool_state)
   endpoint (not yet documented). Need chia client version 1.2.0 or later
+
+* Plots data are collected from the
+  [get_plots](https://github.com/Chia-Network/chia-blockchain/wiki/RPC-Interfaces#get_plots)
+  endpoint.
 
