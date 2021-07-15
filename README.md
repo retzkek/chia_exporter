@@ -22,6 +22,10 @@ Run `./chia_exporter -h` to see the command configuration options:
           The base URL for the full node RPC endpoint. (default "https://localhost:8555")
     -wallet string
           The base URL for the wallet RPC endpoint. (default "https://localhost:9256")
+    -harvester string
+          The base URL for the harvester RPC endpoint. (default "https://localhost:8560")
+    -farmer string
+          The base URL for the farmer RPC endpoint. (default "https://localhost:8559")
 
 ## Metrics
 
@@ -110,13 +114,11 @@ chia_plots_failed_to_open 0
 chia_plots_not_found 0
 ```
 
-### Blockchain
+### Blockchain and Connections (full node)
 
 Various node and blockchain metrics are collected from the
 [get_blockchain_state](https://github.com/Chia-Network/chia-blockchain/wiki/RPC-Interfaces#get_blockchain_state)
 endpoint.
-
-### Connections
 
 * The number of connections are collected for each node type from the
   [get_connections](https://github.com/Chia-Network/chia-blockchain/wiki/RPC-Interfaces#get_connections)
@@ -154,9 +156,13 @@ endpoint. The wallet metrics are collected for each wallet, and include
 * Farmed ammount and reward are collected from the
   [get_farmed_amount](https://github.com/Chia-Network/chia-blockchain/wiki/RPC-Interfaces#get_farmed_amount)
 
+### Pool (farmer)
+
 * Pool state is collected from the
   [get_pool_state](https://github.com/Chia-Network/chia-blockchain/wiki/RPC-Interfaces#get_pool_state)
   endpoint (not yet documented). Need chia client version 1.2.0 or later
+
+### Plots (harvester)
 
 * Plots data are collected from the
   [get_plots](https://github.com/Chia-Network/chia-blockchain/wiki/RPC-Interfaces#get_plots)
