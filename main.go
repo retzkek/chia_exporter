@@ -34,15 +34,16 @@ import (
 )
 
 var (
-	addr   = flag.String("listen", ":9133", "The address to listen on for HTTP requests.")
-	cert   = flag.String("cert", "$HOME/.chia/mainnet/config/ssl/full_node/private_full_node.crt", "The full node SSL certificate.")
-	key    = flag.String("key", "$HOME/.chia/mainnet/config/ssl/full_node/private_full_node.key", "The full node SSL key.")
-	url    = flag.String("url", "https://localhost:8555", "The base URL for the full node RPC endpoint.")
-	wallet = flag.String("wallet", "https://localhost:9256", "The base URL for the wallet RPC endpoint.")
+	addr      = flag.String("listen", ":9133", "The address to listen on for HTTP requests.")
+	cert      = flag.String("cert", "$HOME/.chia/mainnet/config/ssl/full_node/private_full_node.crt", "The full node SSL certificate.")
+	key       = flag.String("key", "$HOME/.chia/mainnet/config/ssl/full_node/private_full_node.key", "The full node SSL key.")
+	url       = flag.String("url", "https://localhost:8555", "The base URL for the full node RPC endpoint.")
+	wallet    = flag.String("wallet", "https://localhost:9256", "The base URL for the wallet RPC endpoint.")
+	harvester = flag.String("harvester", "https://localhost:8560", "The base URL for the harvester RPC endpoint.")
 )
 
 var (
-	Version = "0.4.1"
+	Version = "0.4.1b"
 )
 
 func main() {
@@ -61,9 +62,10 @@ func main() {
 	}
 
 	cc := ChiaCollector{
-		client:    client,
-		baseURL:   *url,
-		walletURL: *wallet,
+		client:       client,
+		baseURL:      *url,
+		walletURL:    *wallet,
+		harvesterURL: *harvester,
 	}
 	prometheus.MustRegister(cc)
 
@@ -125,9 +127,10 @@ func queryAPI(client *http.Client, base, endpoint, query string, result interfac
 }
 
 type ChiaCollector struct {
-	client    *http.Client
-	baseURL   string
-	walletURL string
+	client       *http.Client
+	baseURL      string
+	walletURL    string
+	harvesterURL string
 }
 
 // Describe is implemented with DescribeByCollect.
@@ -140,6 +143,7 @@ func (cc ChiaCollector) Collect(ch chan<- prometheus.Metric) {
 	cc.collectConnections(ch)
 	cc.collectBlockchainState(ch)
 	cc.collectWallets(ch)
+	cc.collectPlots(ch)
 }
 
 func (cc ChiaCollector) collectConnections(ch chan<- prometheus.Metric) {
@@ -369,5 +373,40 @@ func (cc ChiaCollector) collectWalletSync(ch chan<- prometheus.Metric, w Wallet)
 		prometheus.GaugeValue,
 		float64(whi.Height),
 		w.StringID, w.PublicKey,
+	)
+}
+
+func (cc ChiaCollector) collectPlots(ch chan<- prometheus.Metric) {
+	var plots PlotFiles
+	if err := queryAPI(cc.client, cc.harvesterURL, "get_plots", "", &plots); err != nil {
+		log.Print(err)
+		return
+	}
+	ch <- prometheus.MustNewConstMetric(
+		prometheus.NewDesc(
+			"chia_plots_failed_to_open",
+			"Number of plots files failed to open.",
+			nil, nil,
+		),
+		prometheus.GaugeValue,
+		float64(len(plots.FailedToOpen)),
+	)
+	ch <- prometheus.MustNewConstMetric(
+		prometheus.NewDesc(
+			"chia_plots_not_found",
+			"Number of plots files not found.",
+			nil, nil,
+		),
+		prometheus.GaugeValue,
+		float64(len(plots.NotFound)),
+	)
+	ch <- prometheus.MustNewConstMetric(
+		prometheus.NewDesc(
+			"chia_plots",
+			"Number of plots currently using.",
+			nil, nil,
+		),
+		prometheus.GaugeValue,
+		float64(len(plots.Plots)),
 	)
 }

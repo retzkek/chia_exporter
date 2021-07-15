@@ -129,3 +129,22 @@ type WalletPublicKeys struct {
 	PublicKeyFingerprints []int `json:"public_key_fingerprints"`
 	Success               bool
 }
+
+type PlotData struct {
+	FileSize      int64   `json:"file_size"`
+	Filename      string  `json:"filename"`
+	PlotSeed      string  `json:"plot-seed"`
+	PlotID        string  `json:"plot_id"`
+	PublicKey     string  `json:"plot_public_key"`
+	PoolContract  string  `json:"pool_contract_puzzle_hash"`
+	PoolPublicKey string  `json:"pool_public_key"`
+	Size          int64   `json:"size"`
+	TimeModified  float64 `json:"time_modified"`
+}
+
+type PlotFiles struct {
+	FailedToOpen []PlotData `json:"failed_to_open_filenames"`
+	NotFound     []PlotData `json:"not_found_filenames"`
+	Plots        []PlotData `json:"plots"`
+	Success      bool
+}
