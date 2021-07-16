@@ -166,8 +166,8 @@ type PlotData struct {
 }
 
 type PlotFiles struct {
-	FailedToOpen []PlotData `json:"failed_to_open_filenames"`
-	NotFound     []PlotData `json:"not_found_filenames"`
+	FailedToOpen []string   `json:"failed_to_open_filenames"`
+	NotFound     []string   `json:"not_found_filenames"`
 	Plots        []PlotData `json:"plots"`
 	Success      bool
 }
