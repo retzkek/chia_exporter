@@ -112,6 +112,10 @@ chia_plots_failed_to_open 0
 # HELP chia_plots_not_found Number of plots files not found.
 # TYPE chia_plots_not_found gauge
 chia_plots_not_found 0
+# HELP chia_plots_file_size Chia plots file size.
+# TYPE chia_plots_file_size gauge
+chia_plots_file_size{k="32",plot_id="0x0...",pool_contract="",public_key="0x0..."} 1.08823675793e+11
+chia_plots_file_size{k="32",plot_id="0x0...",pool_contract="0x0...",public_key="0x0..."} 1.08810414936e+11
 ```
 
 ### Blockchain and Connections (full node)
