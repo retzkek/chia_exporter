@@ -441,6 +441,21 @@ func (cc ChiaCollector) collectPlots(ch chan<- prometheus.Metric) {
 		log.Print(err)
 		return
 	}
+       for _, p := range plots.Plots {
+               ch <- prometheus.MustNewConstMetric(
+                       prometheus.NewDesc(
+                               "chia_plots_file_size",
+                               "Chia plots file size.",
+                               []string{"plot_id", "public_key", "pool_contract", "k"}, nil,
+                       ),
+                       prometheus.GaugeValue,
+                       float64(p.FileSize),
+                       p.PlotID,
+                       p.PublicKey,
+                       p.PoolContract,
+                       strconv.FormatInt(p.Size, 10),
+               )
+       }
 	ch <- prometheus.MustNewConstMetric(
 		prometheus.NewDesc(
 			"chia_plots_failed_to_open",
