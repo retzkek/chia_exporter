@@ -459,15 +459,31 @@ func (cc ChiaCollector) collectPlots(ch chan<- prometheus.Metric) {
 		prometheus.GaugeValue,
 		float64(len(plots.NotFound)),
 	)
-	ch <- prometheus.MustNewConstMetric(
-		prometheus.NewDesc(
-			"chia_plots",
-			"Number of plots currently using.",
-			nil, nil,
-		),
-		prometheus.GaugeValue,
-		float64(len(plots.Plots)),
-	)
+	chia_plots_summary := make(map[string]map[string]int)
+	for _, p := range plots.Plots {
+		k := strconv.FormatInt(p.Size, 10)
+		if _, found := chia_plots_summary[p.PoolContract][k]; found {
+			chia_plots_summary[p.PoolContract][k] += 1
+		} else {
+			chia_plots_summary[p.PoolContract] = make(map[string]int)
+			chia_plots_summary[p.PoolContract][k] = 1
+		}
+	}
+	for contract, p := range chia_plots_summary {
+		for k, count := range p {
+			ch <- prometheus.MustNewConstMetric(
+				prometheus.NewDesc(
+					"chia_plots",
+					"Number of plots currently using by pool contract key and k size.",
+					[]string{"pool_contract", "k"}, nil,
+				),
+				prometheus.GaugeValue,
+				float64(count),
+				contract,
+				k,
+			)
+		}
+	}
 }
 
 func (cc ChiaCollector) collectFarmedAmount(ch chan<- prometheus.Metric, w Wallet) {

@@ -102,10 +102,11 @@ chia_pool_current_points{launcher_id="0x...",pool_url="https://pool.yyy.y"} 12
 chia_pool_points_acknowledged_24h{launcher_id="0x...",pool_url="https://pool.yyy.y"} 5
 # HELP chia_pool_points_found_24h Points found last 24h on pool.
 # TYPE chia_pool_points_found_24h gauge
-chia_pool_points_found_24h{launcher_id="0x...",pool_url="https://pool.xchpool.org"} 5
-# HELP chia_plots Number of plots currently using.
+chia_pool_points_found_24h{launcher_id="0x...",pool_url="https://pool.yyy.y"} 5
+# HELP chia_plots Number of plots currently using by pool contract key and k size.
 # TYPE chia_plots gauge
-chia_plots 54
+chia_plots{k="32",pool_contract=""} 4
+chia_plots{k="32",pool_contract="0x99c899e03c67edd0078c2706d856aef593c5c4eadb2d2b3670b1485ea1ad5aa2"} 136
 # HELP chia_plots_failed_to_open Number of plots files failed to open.
 # TYPE chia_plots_failed_to_open gauge
 chia_plots_failed_to_open 0
