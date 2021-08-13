@@ -13,3 +13,4 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         goos: linux
         goarch: amd64
+        extra_files: README.md LICENSE.txt chia-exporter@.service
