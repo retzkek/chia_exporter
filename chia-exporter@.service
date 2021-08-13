@@ -1,0 +1,17 @@
+# put this file in /etc/systemd/system then run "sudo systemctl daemon-reload"
+# start with "sudo systemctl start chia-exporter@MYUSERNAME.service"
+# enable running at boot with "sudo systemctl enable chia-exporter@MYUSERNAME.service"
+# See this if you need to customize: https://www.digitalocean.com/community/tutorials/understanding-systemd-units-and-unit-files
+
+[Unit]
+Description=Chia Metrics Prometheus Exporter
+
+[Service]
+User=%i
+ExecStart=/usr/bin/chia_exporter \
+        -cert /home/%i/.chia/mainnet/config/ssl/full_node/private_full_node.crt \
+        -key /home/%i/.chia/mainnet/config/ssl/full_node/private_full_node.key
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
