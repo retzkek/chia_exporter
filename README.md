@@ -4,6 +4,48 @@
 [Chia](https://chia.net) nodes, using the local [RPC
 API](https://github.com/Chia-Network/chia-blockchain/wiki/RPC-Interfaces)
 
+## Quick Install
+
+1. Get the latest tarball for your platform from the [release
+   page](https://github.com/retzkek/chia_exporter/releases)
+
+2. Extract the tarball, move the `chia_exporter` binary to `/usr/bin` and move
+   the `chia-exporter@.service` unit file to `/etc/systemd/system`.
+
+``` sh
+tar xzvf chia_exporter*.tar.gz
+sudo mv chia_exporter /usr/bin
+sudo mv chia-exporter@.service /etc/systemd/system/
+```
+
+3. Start the exporter, substituting your username (or the name of the user that
+   chia runs under) where it says MYUSERNAME below. Optionally enable it to
+   start at boot.
+
+``` sh
+sudo systemctl start chia-exporter@MYUSERNAME.service
+sudo systemctl enable chia-exporter@MYUSERNAME.service
+```
+
+4. Check that it's running.
+
+``` sh
+sudo systemctl status chia-exporter@MYUSERNAME.service
+```
+
+### Troubleshooting
+
+If it fails to start and says it can't find the certificate or key: check if the
+chia SSL certificate and key (needed to talk to the APIs) are in
+`/home/MYUSERNAME/.chia/mainnet/config/ssl/full_node`, which is the default
+location. If they're somewhere else you'll need to modify the service file. If
+you're running the exporter as a different user than chia then you need to
+modify the service file and make sure the user can access the key and cert.
+
+If it says it can't reach one or more chia daemons: if you're not running all
+the daemons, you can safely ignore these warnings. Otherwise you may need to
+update the daemon URLs, see configuration options below.
+
 ## Building and Running
 
 With the [Go](http://golang.org) compiler tools installed:
