@@ -41,10 +41,11 @@ var (
 	wallet    = flag.String("wallet", "https://localhost:9256", "The base URL for the wallet RPC endpoint.")
 	farmer    = flag.String("farmer", "https://localhost:8559", "The base URL for the farmer RPC endpoint.")
 	harvester = flag.String("harvester", "https://localhost:8560", "The base URL for the harvester RPC endpoint.")
+	timeout   = flag.String("timeout", "5s", "HTTP client timeout per request, as duration string.")
 )
 
 var (
-	Version = "0.5.1"
+	Version = "0.5.2"
 )
 
 func main() {
@@ -88,6 +89,10 @@ func newClient(cert, key string) (*http.Client, error) {
 	if err != nil {
 		return nil, err
 	}
+	to, err := time.ParseDuration(*timeout)
+	if err != nil {
+		return nil, err
+	}
 	return &http.Client{
 		Transport: &http.Transport{
 			Proxy: http.ProxyFromEnvironment,
@@ -105,7 +110,7 @@ func newClient(cert, key string) (*http.Client, error) {
 				InsecureSkipVerify: true,
 			},
 		},
-		Timeout: 5 * time.Second,
+		Timeout: to,
 	}, nil
 }
 
