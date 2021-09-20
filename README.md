@@ -154,6 +154,22 @@ chia_plots_failed_to_open 0
 # HELP chia_plots_not_found Number of plots files not found.
 # TYPE chia_plots_not_found gauge
 chia_plots_not_found 0
+# HELP chia_farmer_harvesters Number of harvesters connected to the farmer.
+# TYPE chia_farmer_harvesters gauge
+chia_farmer_harvesters 2
+# HELP chia_farmer_plots Number of plots currently harvesting.
+# TYPE chia_farmer_plots gauge
+chia_farmer_plots{harvester="127.0.0.1",node_id="e661ef5a92be",pool_contract_puzzle_hash="",pool_public_key="0x...",size="32"} 273
+chia_farmer_plots{harvester="127.0.0.1",node_id="e661ef5a92be",pool_contract_puzzle_hash="0x...",pool_public_key="",size="32"} 260
+chia_farmer_plots{harvester="192.168.1.100",node_id="99573777c042",pool_contract_puzzle_hash="0x...",pool_public_key="",size="32"} 90
+# HELP chia_farmer_plots_failed_to_open Number of plot files failed to open.
+# TYPE chia_farmer_plots_failed_to_open gauge
+chia_farmer_plots_failed_to_open{harvester="127.0.0.1",node_id="e661ef5a92be"} 10
+chia_farmer_plots_failed_to_open{harvester="192.168.1.100",node_id="99573777c042"} 0
+# HELP chia_farmer_plots_no_key Number of plots with no key.
+# TYPE chia_farmer_plots_no_key gauge
+chia_farmer_plots_no_key{harvester="127.0.0.1",node_id="e661ef5a92be"} 0
+chia_farmer_plots_no_key{harvester="192.168.1.100",node_id="99573777c042"} 0
 ```
 
 ### Blockchain and Connections (full node)
@@ -202,6 +218,9 @@ endpoint. The wallet metrics are collected for each wallet, and include
 
 * Pool state is collected from the
   [get_pool_state](https://github.com/Chia-Network/chia-blockchain/wiki/RPC-Interfaces#get_pool_state)
+  endpoint (not yet documented). Need chia client version 1.2.0 or later
+
+* Harvesters are collected from [get_harvesters](https://github.com/Chia-Network/chia-blockchain/wiki/RPC-Interfaces#get_harvesters)
   endpoint (not yet documented). Need chia client version 1.2.0 or later
 
 ### Plots (harvester)

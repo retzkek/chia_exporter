@@ -171,3 +171,17 @@ type PlotFiles struct {
 	Plots        []PlotData `json:"plots"`
 	Success      bool
 }
+
+type Harvesters struct {
+	Harvesters []struct {
+		Connection struct {
+			Host   string `json:"host"`
+			NodeId string `json:"node_id"`
+			Port   int64  `json:"port"`
+		} `json:"connection"`
+		FailedToOpenFilenames []string   `json:"failed_to_open_filenames"`
+		NoKeyFilenames        []string   `json:"no_key_filenames"`
+		Plots                 []PlotData `json:"plots"`
+	} `json:"harvesters"`
+	Success bool `json:"success"`
+}

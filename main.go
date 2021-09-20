@@ -153,6 +153,7 @@ func (cc ChiaCollector) Collect(ch chan<- prometheus.Metric) {
 	cc.collectWallets(ch)
 	cc.collectPoolState(ch)
 	cc.collectPlots(ch)
+	cc.collectFarmerHarvesters(ch)
 }
 
 func (cc ChiaCollector) collectConnections(ch chan<- prometheus.Metric) {
@@ -532,4 +533,67 @@ func (cc ChiaCollector) collectFarmedAmount(ch chan<- prometheus.Metric, w Walle
 		float64(farmed.PoolRewardAmount),
 		w.StringID, w.PublicKey,
 	)
+}
+
+func (cc ChiaCollector) collectFarmerHarvesters(ch chan<- prometheus.Metric) {
+	var harvesters Harvesters
+	if err := queryAPI(cc.client, cc.farmerURL, "get_harvesters", "", &harvesters); err != nil {
+		log.Print(err)
+		return
+	}
+	ch <- prometheus.MustNewConstMetric(
+		prometheus.NewDesc(
+			"chia_farmer_harvesters",
+			"Number of harvesters connected to the farmer.",
+			nil, nil,
+		),
+		prometheus.GaugeValue,
+		float64(len(harvesters.Harvesters)),
+	)
+	for _, h := range harvesters.Harvesters {
+		ch <- prometheus.MustNewConstMetric(
+			prometheus.NewDesc(
+				"chia_farmer_plots_failed_to_open",
+				"Number of plot files failed to open.",
+				[]string{"harvester", "node_id"}, nil,
+			),
+			prometheus.GaugeValue,
+			float64(len(h.FailedToOpenFilenames)),
+			h.Connection.Host,
+			h.Connection.NodeId[0:12],
+		)
+		ch <- prometheus.MustNewConstMetric(
+			prometheus.NewDesc(
+				"chia_farmer_plots_no_key",
+				"Number of plots with no key.",
+				[]string{"harvester", "node_id"}, nil,
+			),
+			prometheus.GaugeValue,
+			float64(len(h.NoKeyFilenames)),
+			h.Connection.Host,
+			h.Connection.NodeId[0:12],
+		)
+		plots := make(map[[3]string]float64)
+		for _, p := range h.Plots {
+			s := strconv.FormatInt(int64(p.Size), 10)
+			plots[[3]string{p.PoolPublicKey, p.PoolContract, s}]++
+		}
+		plotsDesc := prometheus.NewDesc(
+			"chia_farmer_plots",
+			"Number of plots currently harvesting.",
+			[]string{"harvester", "node_id", "pool_public_key", "pool_contract_puzzle_hash", "size"}, nil,
+		)
+		for k, v := range plots {
+			ch <- prometheus.MustNewConstMetric(
+				plotsDesc,
+				prometheus.GaugeValue,
+				v,
+				h.Connection.Host,
+				h.Connection.NodeId[0:12],
+				k[0],
+				k[1],
+				k[2],
+			)
+		}
+	}
 }
