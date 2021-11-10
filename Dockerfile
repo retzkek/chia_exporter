@@ -6,7 +6,7 @@ RUN apk add --update --no-cache --virtual build-dependencies \
  && cd chia_exporter \
  && go build -tags netgo
 
-FROM ghcr.io/chia-network/chia:latest
+FROM ghcr.io/chia-network/chia:1.2.11
 COPY --from=builder /build/chia_exporter/chia_exporter /usr/bin/chia_exporter
 COPY docker/exporter_init.sh /usr/local/bin/exporter_init.sh
 EXPOSE 9133
