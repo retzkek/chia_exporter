@@ -1,7 +1,7 @@
 FROM golang:alpine AS builder
 
 WORKDIR /build
-COPY . /build/chia_exporter
+COPY ./*.go go.mod go.sum /build/chia_exporter/
 RUN apk add --update --no-cache --virtual build-dependencies \
  && cd chia_exporter \
  && go build -tags netgo
