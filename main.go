@@ -24,6 +24,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -37,7 +38,7 @@ var (
 	addr      = flag.String("listen", ":9133", "The address to listen on for HTTP requests.")
 	cert      = flag.String("cert", "$HOME/.chia/mainnet/config/ssl/full_node/private_full_node.crt", "The full node SSL certificate.")
 	key       = flag.String("key", "$HOME/.chia/mainnet/config/ssl/full_node/private_full_node.key", "The full node SSL key.")
-	url       = flag.String("url", "https://localhost:8555", "The base URL for the full node RPC endpoint.")
+	full_node = flag.String("full_node", "https://localhost:8555", "The base URL for the full node RPC endpoint.")
 	wallet    = flag.String("wallet", "https://localhost:9256", "The base URL for the wallet RPC endpoint.")
 	farmer    = flag.String("farmer", "https://localhost:8559", "The base URL for the farmer RPC endpoint.")
 	harvester = flag.String("harvester", "https://localhost:8560", "The base URL for the harvester RPC endpoint.")
@@ -50,22 +51,31 @@ var (
 
 func main() {
 	log.Printf("chia_exporter version %s", Version)
+
+        // Alias legacy flags
+        flag.StringVar(full_node, "url", *full_node, "Legacy compatibility alias for -full_node")
 	flag.Parse()
 
 	client, err := newClient(os.ExpandEnv(*cert), os.ExpandEnv(*key))
 	if err != nil {
 		log.Fatal(err)
 	}
-	var info NetworkInfo
-	if err := queryAPI(client, *url, "get_network_info", "", &info); err != nil {
-		log.Print(err)
-	} else {
-		log.Printf("Connected to node at %s on %s", *url, info.NetworkName)
-	}
+
+        // Validate RPC endpoints and disable invalid ones
+        endpoints := []*string{full_node, wallet, farmer, harvester}
+	for _, e := range endpoints {
+                _, err = url.ParseRequestURI(*e)
+                if err != nil {
+                        log.Printf("Disabling invalid endpoint: %+v", err)
+                        *e = "disabled"
+                } else if !strings.HasPrefix(*e, "https://") {
+                        log.Fatal("Endpoint URL does not start with https://, endpoint SSL is mandatory: ", *e)
+                }
+        }
 
 	cc := ChiaCollector{
 		client:       client,
-		baseURL:      *url,
+		full_nodeURL: *full_node,
 		walletURL:    *wallet,
 		farmerURL:    *farmer,
 		harvesterURL: *harvester,
@@ -135,7 +145,7 @@ func queryAPI(client *http.Client, base, endpoint, query string, result interfac
 
 type ChiaCollector struct {
 	client       *http.Client
-	baseURL      string
+	full_nodeURL string
 	walletURL    string
 	farmerURL    string
 	harvesterURL string
@@ -148,16 +158,25 @@ func (cc ChiaCollector) Describe(ch chan<- *prometheus.Desc) {
 
 // Collect queries Chia and returns metrics on ch.
 func (cc ChiaCollector) Collect(ch chan<- prometheus.Metric) {
-	cc.collectConnections(ch)
-	cc.collectBlockchainState(ch)
-	cc.collectWallets(ch)
-	cc.collectPoolState(ch)
-	cc.collectPlots(ch)
+        // Any endpoint could be set to "disabled" to indicate it's disabled
+        if cc.full_nodeURL != "disabled" {
+	        cc.collectConnections(ch)
+	        cc.collectBlockchainState(ch)
+        }
+        if cc.walletURL != "disabled" {
+	        cc.collectWallets(ch)
+        }
+        if cc.farmerURL != "disabled" {
+	        cc.collectPoolState(ch)
+        }
+        if cc.harvesterURL != "disabled" {
+	        cc.collectPlots(ch)
+        }
 }
 
 func (cc ChiaCollector) collectConnections(ch chan<- prometheus.Metric) {
 	var conns Connections
-	if err := queryAPI(cc.client, cc.baseURL, "get_connections", "", &conns); err != nil {
+	if err := queryAPI(cc.client, cc.full_nodeURL, "get_connections", "", &conns); err != nil {
 		log.Print(err)
 		return
 	}
@@ -182,7 +201,7 @@ func (cc ChiaCollector) collectConnections(ch chan<- prometheus.Metric) {
 
 func (cc ChiaCollector) collectBlockchainState(ch chan<- prometheus.Metric) {
 	var bs BlockchainState
-	if err := queryAPI(cc.client, cc.baseURL, "get_blockchain_state", "", &bs); err != nil {
+	if err := queryAPI(cc.client, cc.full_nodeURL, "get_blockchain_state", "", &bs); err != nil {
 		log.Print(err)
 		return
 	}

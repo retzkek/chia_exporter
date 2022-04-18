@@ -56,18 +56,22 @@ Run `./chia_exporter -h` to see the command configuration options:
 
     -cert string
           The full node SSL certificate. (default "$HOME/.chia/mainnet/config/ssl/full_node/private_full_node.crt")
+    -farmer string
+          The base URL for the farmer RPC endpoint. (default "https://localhost:8559")
+    -full_node string
+          The base URL for the full node RPC endpoint. (default "https://localhost:8555")
+    -harvester string
+          The base URL for the harvester RPC endpoint. (default "https://localhost:8560")
     -key string
           The full node SSL key. (default "$HOME/.chia/mainnet/config/ssl/full_node/private_full_node.key")
     -listen string
           The address to listen on for HTTP requests. (default ":9133")
+    -timeout string
+          HTTP client timeout per request, as duration string. (default "5s")
     -url string
-          The base URL for the full node RPC endpoint. (default "https://localhost:8555")
+          Legacy compatibility alias for -full_node (default "https://localhost:8555")
     -wallet string
           The base URL for the wallet RPC endpoint. (default "https://localhost:9256")
-    -harvester string
-          The base URL for the harvester RPC endpoint. (default "https://localhost:8560")
-    -farmer string
-          The base URL for the farmer RPC endpoint. (default "https://localhost:8559")
 
 ## Metrics
 
